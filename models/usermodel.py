@@ -9,7 +9,7 @@ class UserModel(Document):
     role = StringField(choices=["employer", "jobseeker"],required=True)
     bio=StringField()
     verified = BooleanField(default=False)
-    skills = ListField(StringField())
+    skills = ListField(StringField(),default=[])
     experience=StringField(choices=["Entry Level", "Mid Level", "Senior"])
     status=StringField(choices=["active","inactive"],default="inactive")
     application=ListField(ReferenceField("JobModel"))

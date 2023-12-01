@@ -5,28 +5,36 @@ from models.usermodel import UserModel
 
 job_bp=Blueprint("jobs",__name__)
 
-@job_bp.route("/createjob/<user_id>",methods=["POST"])
+from datetime import datetime
+
+@job_bp.route("/createjob/<user_id>", methods=["POST"])
 def createjob(user_id):
-  try:
-    data=request.get_json()
-    required_keys=["title","status","end_date","skills","about"]
-    print(data)
-    if all(key in data for key in required_keys):
-        new_job=JobModel(
-            title=data["title"],
-            status=data["status"],
-            end_date=data["end_date"],
-            skills=data["skills"],
-            about=data["about"],
-            employer=user_id
-        )
-        new_job.save()
-        return make_response(jsonify({'message':"job created successfully"}),200)
-    else:
-        return make_response(jsonify({"message":"all feilds are required"}),404)
-  except Exception as e:
+    try:
+        data = request.get_json()
+        required_keys = ["title", "status", "end_date", "skills", "about"]
+
+        if all(key in data for key in required_keys):
+            # Parse the end_date string into a datetime object
+            end_date_format = "%Y-%m-%dT%H:%M"
+            end_date = datetime.strptime(data["end_date"], end_date_format)
+
+            new_job = JobModel(
+                title=data["title"],
+                status=data["status"],
+                end_date=end_date,
+                skills=data["skills"],
+                about=data["about"],
+                employer=user_id
+            )
+
+            new_job.save()
+            return make_response(jsonify({'message': "Job created successfully"}), 200)
+        else:
+            return make_response(jsonify({"message": "All fields are required"}), 404)
+
+    except Exception as e:
         return make_response(jsonify({"message": f"Error creating job: {str(e)}"}), 500)
-  
+
 @job_bp.route("/editjob/<job_id>",methods=["PATCH"])
 def editjob(job_id):
   try:
@@ -36,9 +44,9 @@ def editjob(job_id):
     title =data["title"]
     skills=data["skills"]
     about=data["about"]
-    end_date=data["end_date"]
     status=data['status']
-  
+    end_date_format = "%Y-%m-%dT%H:%M"
+    end_date = datetime.strptime(data["end_date"], end_date_format)
     
     JobModel.objects(id=job_id).first().update(
             set__title=title,
